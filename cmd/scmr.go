@@ -28,76 +28,73 @@ func scmrCmdInit() {
 }
 
 func scmrCreateCmdInit() {
-  scmrCreateFlags := newFlagSet("Service")
+	scmrCreateFlags := newFlagSet("Service")
 
-  scmrCreateFlags.Flags.StringVarP(&scmrCreate.DisplayName, "display-name", "n", "", "Display name of service to create")
-  scmrCreateFlags.Flags.StringVarP(&scmrCreate.ServiceName, "service", "s", "", "Name of service to create")
-  scmrCreateFlags.Flags.BoolVar(&scmrCreate.NoDelete, "no-delete", false, "Don't delete service after execution")
-  scmrCreateFlags.Flags.BoolVar(&scmrCreate.NoStart, "no-start", false, "Don't start service")
+	scmrCreateFlags.Flags.StringVarP(&scmrCreate.DisplayName, "display-name", "n", "", "Display name of service to create")
+	scmrCreateFlags.Flags.StringVarP(&scmrCreate.ServiceName, "service", "s", "", "Name of service to create")
+	scmrCreateFlags.Flags.BoolVar(&scmrCreate.NoDelete, "no-delete", false, "Don't delete service after execution")
+	scmrCreateFlags.Flags.BoolVar(&scmrCreate.NoStart, "no-start", false, "Don't start service")
 
-  scmrCreateExecFlags := newFlagSet("Execution")
+	scmrCreateExecFlags := newFlagSet("Execution")
 
-  // TODO: SCMR output
-  //registerExecutionOutputFlags(scmrCreateExecFlags.Flags)
+	// TODO: SCMR output
+	//registerExecutionOutputFlags(scmrCreateExecFlags.Flags)
+	registerExecutionUploadFlags(scmrCreateExecFlags.Flags)
 
-  scmrCreateExecFlags.Flags.StringVarP(&exec.Input.ExecutablePath, "executable-path", "f", "", "Full path to a remote Windows executable")
-  scmrCreateExecFlags.Flags.StringVarP(&exec.Input.Arguments, "args", "a", "", "Arguments to pass to the executable")
+	scmrCreateExecFlags.Flags.StringVarP(&exec.Input.ExecutablePath, "executable-path", "f", "", "Full path to a remote Windows executable")
+	scmrCreateExecFlags.Flags.StringVarP(&exec.Input.Arguments, "args", "a", "", "Arguments to pass to the executable")
 
-  scmrCreateCmd.Flags().AddFlagSet(scmrCreateFlags.Flags)
-  scmrCreateCmd.Flags().AddFlagSet(scmrCreateExecFlags.Flags)
+	scmrCreateCmd.Flags().AddFlagSet(scmrCreateFlags.Flags)
+	scmrCreateCmd.Flags().AddFlagSet(scmrCreateExecFlags.Flags)
 
-  cmdFlags[scmrCreateCmd] = []*flagSet{
-    scmrCreateExecFlags,
-    scmrCreateFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
+	cmdFlags[scmrCreateCmd] = []*flagSet{
+		scmrCreateExecFlags,
+		scmrCreateFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
 
-  // Constraints
-  {
-    //scmrCreateCmd.MarkFlagsMutuallyExclusive("no-delete", "no-start")
-    if err := scmrCreateCmd.MarkFlagRequired("executable-path"); err != nil {
-      panic(err)
-    }
-  }
+	// Constraints
+	{
+		//scmrCreateCmd.MarkFlagsMutuallyExclusive("no-delete", "no-start")
+		scmrCreateCmd.MarkFlagsOneRequired("executable-path", "upload")
+	}
 }
 
 func scmrChangeCmdInit() {
-  scmrChangeFlags := newFlagSet("Service Control")
+	scmrChangeFlags := newFlagSet("Service Control")
 
-  scmrChangeFlags.Flags.StringVarP(&scmrChange.ServiceName, "service-name", "s", "", "Name of service to modify")
-  scmrChangeFlags.Flags.BoolVar(&scmrChange.NoStart, "no-start", false, "Don't start service")
+	scmrChangeFlags.Flags.StringVarP(&scmrChange.ServiceName, "service-name", "s", "", "Name of service to modify")
+	scmrChangeFlags.Flags.BoolVar(&scmrChange.NoStart, "no-start", false, "Don't start service")
 
-  scmrChangeExecFlags := newFlagSet("Execution")
+	scmrChangeExecFlags := newFlagSet("Execution")
 
-  scmrChangeExecFlags.Flags.StringVarP(&exec.Input.ExecutablePath, "executable-path", "f", "", "Full path to remote Windows executable")
-  scmrChangeExecFlags.Flags.StringVarP(&exec.Input.Arguments, "args", "a", "", "Arguments to pass to executable")
+	scmrChangeExecFlags.Flags.StringVarP(&exec.Input.ExecutablePath, "executable-path", "f", "", "Full path to remote Windows executable")
+	scmrChangeExecFlags.Flags.StringVarP(&exec.Input.Arguments, "args", "a", "", "Arguments to pass to executable")
 
-  // TODO: SCMR output
-  //registerExecutionOutputFlags(scmrChangeExecFlags.Flags)
-  //registerStageFlags(scmrChangeExecFlags.Flags)
+	// TODO: SCMR output
+	//registerExecutionOutputFlags(scmrChangeExecFlags.Flags)
+	registerExecutionUploadFlags(scmrChangeExecFlags.Flags)
 
-  cmdFlags[scmrChangeCmd] = []*flagSet{
-    scmrChangeFlags,
-    scmrChangeExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
+	cmdFlags[scmrChangeCmd] = []*flagSet{
+		scmrChangeFlags,
+		scmrChangeExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
 
-  scmrChangeCmd.Flags().AddFlagSet(scmrChangeFlags.Flags)
-  scmrChangeCmd.Flags().AddFlagSet(scmrChangeExecFlags.Flags)
+	scmrChangeCmd.Flags().AddFlagSet(scmrChangeFlags.Flags)
+	scmrChangeCmd.Flags().AddFlagSet(scmrChangeExecFlags.Flags)
 
-  // Constraints
-  {
-    if err := scmrChangeCmd.MarkFlagRequired("service-name"); err != nil {
-      panic(err)
-    }
-    if err := scmrCreateCmd.MarkFlagRequired("executable-path"); err != nil {
-      panic(err)
-    }
-  }
+	// Constraints
+	{
+		if err := scmrChangeCmd.MarkFlagRequired("service-name"); err != nil {
+			panic(err)
+		}
+		scmrChangeCmd.MarkFlagsOneRequired("executable-path", "upload")
+	}
 }
 
 func scmrDeleteCmdInit() {
@@ -139,13 +136,14 @@ var (
     Long: `Description:
   The create method calls RCreateServiceW to create a new Windows service on the
   remote target with the provided executable & arguments as the lpBinaryPathName`,
-    Args: args(
-      argsRpcClient("cifs", "ncacn_np:[svcctl]"),
-      argsSmbClient(),
-    ),
+		Args: args(
+			argsRpcClient("cifs", "ncacn_np:[svcctl]"),
+			argsSmbClient(),
+			argsUpload("smb"),
+		),
 
-    Run: func(cmd *cobra.Command, args []string) {
-      scmrCreate.Client = &rpcClient
+		Run: func(cmd *cobra.Command, args []string) {
+			scmrCreate.Client = &rpcClient
       scmrCreate.IO = exec
 
       log = log.With().
@@ -184,10 +182,13 @@ var (
   using the RChangeServiceConfigW method rather than calling RCreateServiceW
   like scmr create. The modified service is restored to its original state
   after execution`,
-    Args: argsRpcClient("cifs", "ncacn_np:[svcctl]"),
+		Args: args(
+			argsRpcClient("cifs", "ncacn_np:[svcctl]"),
+			argsUpload("smb"),
+		),
 
-    Run: func(cmd *cobra.Command, args []string) {
-      scmrChange.Client = &rpcClient
+		Run: func(cmd *cobra.Command, args []string) {
+			scmrChange.Client = &rpcClient
       scmrChange.IO = exec
 
       ctx := log.With().

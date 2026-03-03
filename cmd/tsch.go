@@ -36,12 +36,13 @@ func tschDemandCmdInit() {
   tschDemandFlags.Flags.StringVar(&tschDemand.UserSid, "sid", "S-1-5-18", "User `SID` to impersonate")
   tschDemandFlags.Flags.BoolVar(&tschDemand.NoDelete, "no-delete", false, "Don't delete task after execution")
 
-  tschDemandExecFlags := newFlagSet("Execution")
+	tschDemandExecFlags := newFlagSet("Execution")
 
-  registerExecutionFlags(tschDemandExecFlags.Flags)
-  registerExecutionOutputFlags(tschDemandExecFlags.Flags)
+	registerExecutionFlags(tschDemandExecFlags.Flags)
+	registerExecutionOutputFlags(tschDemandExecFlags.Flags)
+	registerExecutionUploadFlags(tschDemandExecFlags.Flags)
 
-  cmdFlags[tschDemandCmd] = []*flagSet{
+	cmdFlags[tschDemandCmd] = []*flagSet{
     tschDemandFlags,
     tschDemandExecFlags,
     defaultAuthFlags,
@@ -49,9 +50,9 @@ func tschDemandCmdInit() {
     defaultNetRpcFlags,
   }
 
-  tschDemandCmd.Flags().AddFlagSet(tschDemandFlags.Flags)
-  tschDemandCmd.Flags().AddFlagSet(tschDemandExecFlags.Flags)
-  tschDemandCmd.MarkFlagsOneRequired("exec", "command")
+	tschDemandCmd.Flags().AddFlagSet(tschDemandFlags.Flags)
+	tschDemandCmd.Flags().AddFlagSet(tschDemandExecFlags.Flags)
+	tschDemandCmd.MarkFlagsOneRequired("exec", "command", "upload")
 }
 
 func tschCreateCmdInit() {
@@ -65,12 +66,13 @@ func tschCreateCmdInit() {
   tschCreateFlags.Flags.BoolVar(&tschCreate.CallDelete, "call-delete", false, "Directly call SchRpcDelete to delete task")
   tschCreateFlags.Flags.StringVar(&tschCreate.UserSid, "sid", "S-1-5-18", "User `SID` to impersonate")
 
-  tschCreateExecFlags := newFlagSet("Execution")
+	tschCreateExecFlags := newFlagSet("Execution")
 
-  registerExecutionFlags(tschCreateExecFlags.Flags)
-  registerExecutionOutputFlags(tschCreateExecFlags.Flags)
+	registerExecutionFlags(tschCreateExecFlags.Flags)
+	registerExecutionOutputFlags(tschCreateExecFlags.Flags)
+	registerExecutionUploadFlags(tschCreateExecFlags.Flags)
 
-  cmdFlags[tschCreateCmd] = []*flagSet{
+	cmdFlags[tschCreateCmd] = []*flagSet{
     tschCreateFlags,
     tschCreateExecFlags,
     defaultAuthFlags,
@@ -78,9 +80,9 @@ func tschCreateCmdInit() {
     defaultNetRpcFlags,
   }
 
-  tschCreateCmd.Flags().AddFlagSet(tschCreateFlags.Flags)
-  tschCreateCmd.Flags().AddFlagSet(tschCreateExecFlags.Flags)
-  tschCreateCmd.MarkFlagsOneRequired("exec", "command")
+	tschCreateCmd.Flags().AddFlagSet(tschCreateFlags.Flags)
+	tschCreateCmd.Flags().AddFlagSet(tschCreateExecFlags.Flags)
+	tschCreateCmd.MarkFlagsOneRequired("exec", "command", "upload")
 }
 
 func tschChangeCmdInit() {
@@ -90,12 +92,13 @@ func tschChangeCmdInit() {
   tschChangeFlags.Flags.BoolVar(&tschChange.NoStart, "no-start", false, "Don't start the task")
   tschChangeFlags.Flags.BoolVar(&tschChange.NoRevert, "no-revert", false, "Don't restore the original task definition")
 
-  tschChangeExecFlags := newFlagSet("Execution")
+	tschChangeExecFlags := newFlagSet("Execution")
 
-  registerExecutionFlags(tschChangeExecFlags.Flags)
-  registerExecutionOutputFlags(tschChangeExecFlags.Flags)
+	registerExecutionFlags(tschChangeExecFlags.Flags)
+	registerExecutionOutputFlags(tschChangeExecFlags.Flags)
+	registerExecutionUploadFlags(tschChangeExecFlags.Flags)
 
-  cmdFlags[tschChangeCmd] = []*flagSet{
+	cmdFlags[tschChangeCmd] = []*flagSet{
     tschChangeFlags,
     tschChangeExecFlags,
     defaultAuthFlags,
@@ -108,10 +111,10 @@ func tschChangeCmdInit() {
 
   // Constraints
   {
-    if err := tschChangeCmd.MarkFlagRequired("task"); err != nil {
-      panic(err)
-    }
-    tschChangeCmd.MarkFlagsOneRequired("exec", "command")
+		if err := tschChangeCmd.MarkFlagRequired("task"); err != nil {
+			panic(err)
+		}
+		tschChangeCmd.MarkFlagsOneRequired("exec", "command", "upload")
   }
 }
 
@@ -152,14 +155,15 @@ var (
   Similar to the create method, the demand method will call SchRpcRegisterTask,
   But rather than setting a defined time when the task will start, it will
   additionally call SchRpcRun to forcefully start the task.`,
-    Args: args(
-      argsRpcClient("cifs", "ncacn_np:[atsvc]"),
-      argsOutput("smb"),
-      argsTask,
-    ),
+		Args: args(
+			argsRpcClient("cifs", "ncacn_np:[atsvc]"),
+			argsOutput("smb"),
+			argsUpload("smb"),
+			argsTask,
+		),
 
-    Run: func(*cobra.Command, []string) {
-      tschDemand.Client = &rpcClient
+		Run: func(*cobra.Command, []string) {
+			tschDemand.Client = &rpcClient
       tschDemand.TaskPath = tschTask
 
       ctx := log.With().
@@ -180,14 +184,15 @@ var (
   with an automatic start time.This method avoids directly calling SchRpcRun,
   and can even avoid calling SchRpcDelete by populating the DeleteExpiredTaskAfter
   Setting.`,
-    Args: args(
-      argsRpcClient("cifs", "ncacn_np:[atsvc]"),
-      argsOutput("smb"),
-      argsTask,
-    ),
+		Args: args(
+			argsRpcClient("cifs", "ncacn_np:[atsvc]"),
+			argsOutput("smb"),
+			argsUpload("smb"),
+			argsTask,
+		),
 
-    Run: func(*cobra.Command, []string) {
-      tschCreate.Client = &rpcClient
+		Run: func(*cobra.Command, []string) {
+			tschCreate.Client = &rpcClient
       tschCreate.TaskPath = tschTask
 
       ctx := log.With().
@@ -206,14 +211,15 @@ var (
     Long: `Description:
   The change method calls SchRpcRetrieveTask to fetch the definition of an existing
   task (-t), then modifies the task definition to spawn a process`,
-    Args: args(
-      argsRpcClient("cifs", "ncacn_np:[atsvc]"),
-      argsOutput("smb"),
+		Args: args(
+			argsRpcClient("cifs", "ncacn_np:[atsvc]"),
+			argsOutput("smb"),
+			argsUpload("smb"),
 
-      func(*cobra.Command, []string) error {
-        return tschexec.ValidateTaskPath(tschChange.TaskPath)
-      },
-    ),
+			func(*cobra.Command, []string) error {
+				return tschexec.ValidateTaskPath(tschChange.TaskPath)
+			},
+		),
 
     Run: func(*cobra.Command, []string) {
       tschChange.Client = &rpcClient

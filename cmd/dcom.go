@@ -61,127 +61,133 @@ func dcomVisualStudioCmdInit() {
 }
 
 func dcomMmcCmdInit() {
-  dcomMmcExecFlags := newFlagSet("Execution")
-  registerExecutionFlags(dcomMmcExecFlags.Flags)
-  registerExecutionOutputFlags(dcomMmcExecFlags.Flags)
-  dcomMmcExecFlags.Flags.StringVar(&dcomMmc.WorkingDirectory, "directory", `C:\`, "Working `directory`")
-  dcomMmcExecFlags.Flags.StringVar(&dcomMmc.WindowState, "window", "Minimized", "Window state")
+	dcomMmcExecFlags := newFlagSet("Execution")
+	registerExecutionFlags(dcomMmcExecFlags.Flags)
+	registerExecutionOutputFlags(dcomMmcExecFlags.Flags)
+	registerExecutionUploadFlags(dcomMmcExecFlags.Flags)
+	dcomMmcExecFlags.Flags.StringVar(&dcomMmc.WorkingDirectory, "directory", `C:\`, "Working `directory`")
+	dcomMmcExecFlags.Flags.StringVar(&dcomMmc.WindowState, "window", "Minimized", "Window state")
 
-  cmdFlags[dcomMmcCmd] = []*flagSet{
-    dcomMmcExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomMmcCmd.Flags().AddFlagSet(dcomMmcExecFlags.Flags)
+	cmdFlags[dcomMmcCmd] = []*flagSet{
+		dcomMmcExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomMmcCmd.Flags().AddFlagSet(dcomMmcExecFlags.Flags)
 
-  // Constraints
-  dcomMmcCmd.MarkFlagsOneRequired("command", "exec")
+	// Constraints
+	dcomMmcCmd.MarkFlagsOneRequired("command", "exec", "upload")
 }
 
 func dcomShellWindowsCmdInit() {
-  dcomShellWindowsExecFlags := newFlagSet("Execution")
-  registerExecutionFlags(dcomShellWindowsExecFlags.Flags)
-  registerExecutionOutputFlags(dcomShellWindowsExecFlags.Flags)
-  dcomShellWindowsExecFlags.Flags.StringVar(&dcomShellWindows.WorkingDirectory, "directory", `C:\`, "Working directory `path`")
-  dcomShellWindowsExecFlags.Flags.StringVar(&dcomShellWindows.WindowState, "app-window", "0", "Application window state `ID`")
+	dcomShellWindowsExecFlags := newFlagSet("Execution")
+	registerExecutionFlags(dcomShellWindowsExecFlags.Flags)
+	registerExecutionOutputFlags(dcomShellWindowsExecFlags.Flags)
+	registerExecutionUploadFlags(dcomShellWindowsExecFlags.Flags)
+	dcomShellWindowsExecFlags.Flags.StringVar(&dcomShellWindows.WorkingDirectory, "directory", `C:\`, "Working directory `path`")
+	dcomShellWindowsExecFlags.Flags.StringVar(&dcomShellWindows.WindowState, "app-window", "0", "Application window state `ID`")
 
-  cmdFlags[dcomShellWindowsCmd] = []*flagSet{
-    dcomShellWindowsExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomShellWindowsCmd.Flags().AddFlagSet(dcomShellWindowsExecFlags.Flags)
+	cmdFlags[dcomShellWindowsCmd] = []*flagSet{
+		dcomShellWindowsExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomShellWindowsCmd.Flags().AddFlagSet(dcomShellWindowsExecFlags.Flags)
 
-  // Constraints
-  dcomShellWindowsCmd.MarkFlagsOneRequired("command", "exec")
+	// Constraints
+	dcomShellWindowsCmd.MarkFlagsOneRequired("command", "exec", "upload")
 }
 
 func dcomShellBrowserWindowCmdInit() {
-  dcomShellBrowserWindowExecFlags := newFlagSet("Execution")
-  registerExecutionFlags(dcomShellBrowserWindowExecFlags.Flags)
-  registerExecutionOutputFlags(dcomShellBrowserWindowExecFlags.Flags)
-  dcomShellBrowserWindowExecFlags.Flags.StringVar(&dcomShellBrowserWindow.WorkingDirectory, "directory", `C:\`, "Working directory `path`")
-  dcomShellBrowserWindowExecFlags.Flags.StringVar(&dcomShellBrowserWindow.WindowState, "app-window", "0", "Application window state `ID`")
+	dcomShellBrowserWindowExecFlags := newFlagSet("Execution")
+	registerExecutionFlags(dcomShellBrowserWindowExecFlags.Flags)
+	registerExecutionOutputFlags(dcomShellBrowserWindowExecFlags.Flags)
+	registerExecutionUploadFlags(dcomShellBrowserWindowExecFlags.Flags)
+	dcomShellBrowserWindowExecFlags.Flags.StringVar(&dcomShellBrowserWindow.WorkingDirectory, "directory", `C:\`, "Working directory `path`")
+	dcomShellBrowserWindowExecFlags.Flags.StringVar(&dcomShellBrowserWindow.WindowState, "app-window", "0", "Application window state `ID`")
 
-  cmdFlags[dcomShellBrowserWindowCmd] = []*flagSet{
-    dcomShellBrowserWindowExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomShellBrowserWindowCmd.Flags().AddFlagSet(dcomShellBrowserWindowExecFlags.Flags)
+	cmdFlags[dcomShellBrowserWindowCmd] = []*flagSet{
+		dcomShellBrowserWindowExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomShellBrowserWindowCmd.Flags().AddFlagSet(dcomShellBrowserWindowExecFlags.Flags)
 
-  // Constraints
-  dcomShellBrowserWindowCmd.MarkFlagsOneRequired("command", "exec")
+	// Constraints
+	dcomShellBrowserWindowCmd.MarkFlagsOneRequired("command", "exec", "upload")
 }
 
 func dcomHtafileCmdInit() {
-  dcomHtafileExecFlags := newFlagSet("Execution")
-  dcomHtafileExecFlags.Flags.StringVarP(&dcomHtafile.Url, "url", "U", "", "Load custom `URL`")
-  dcomHtafileExecFlags.Flags.StringVar(&dcomHtafile.Javascript, "js", "", "Execute JavaScript one-liner")
-  dcomHtafileExecFlags.Flags.StringVar(&dcomHtafile.Vbscript, "vbs", "", "Execute VBScript one-liner")
-  registerExecutionFlags(dcomHtafileExecFlags.Flags)
-  registerExecutionOutputFlags(dcomHtafileExecFlags.Flags)
+	dcomHtafileExecFlags := newFlagSet("Execution")
+	dcomHtafileExecFlags.Flags.StringVarP(&dcomHtafile.Url, "url", "U", "", "Load custom `URL`")
+	dcomHtafileExecFlags.Flags.StringVar(&dcomHtafile.Javascript, "js", "", "Execute JavaScript one-liner")
+	dcomHtafileExecFlags.Flags.StringVar(&dcomHtafile.Vbscript, "vbs", "", "Execute VBScript one-liner")
+	registerExecutionFlags(dcomHtafileExecFlags.Flags)
+	registerExecutionOutputFlags(dcomHtafileExecFlags.Flags)
+	registerExecutionUploadFlags(dcomHtafileExecFlags.Flags)
 
-  cmdFlags[dcomHtafileCmd] = []*flagSet{
-    dcomHtafileExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomHtafileCmd.Flags().AddFlagSet(dcomHtafileExecFlags.Flags)
+	cmdFlags[dcomHtafileCmd] = []*flagSet{
+		dcomHtafileExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomHtafileCmd.Flags().AddFlagSet(dcomHtafileExecFlags.Flags)
 
-  // Constraints
-  dcomHtafileCmd.MarkFlagsOneRequired("command", "exec", "url", "js", "vbs")
+	// Constraints
+	dcomHtafileCmd.MarkFlagsOneRequired("command", "exec", "url", "js", "vbs", "upload")
 }
 
 func dcomExcelMacroCmdInit() {
-  dcomExcelMacroExecFlags := newFlagSet("Execution")
-  dcomExcelMacroExecFlags.Flags.StringArrayVarP(&dcomExcelMacro.Macros, "macro", "M", nil, "XLM macro `code`")
-  dcomExcelMacroExecFlags.Flags.StringVar(&dcomExcelMacro.MacroFile, "macro-file", "", "XLM macro `file`")
-  registerExecutionFlags(dcomExcelMacroExecFlags.Flags)
-  registerExecutionOutputFlags(dcomExcelMacroExecFlags.Flags)
+	dcomExcelMacroExecFlags := newFlagSet("Execution")
+	dcomExcelMacroExecFlags.Flags.StringArrayVarP(&dcomExcelMacro.Macros, "macro", "M", nil, "XLM macro `code`")
+	dcomExcelMacroExecFlags.Flags.StringVar(&dcomExcelMacro.MacroFile, "macro-file", "", "XLM macro `file`")
+	registerExecutionFlags(dcomExcelMacroExecFlags.Flags)
+	registerExecutionOutputFlags(dcomExcelMacroExecFlags.Flags)
+	registerExecutionUploadFlags(dcomExcelMacroExecFlags.Flags)
 
-  cmdFlags[dcomExcelMacroCmd] = []*flagSet{
-    dcomExcelMacroExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomExcelMacroCmd.Flags().AddFlagSet(dcomExcelMacroExecFlags.Flags)
+	cmdFlags[dcomExcelMacroCmd] = []*flagSet{
+		dcomExcelMacroExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomExcelMacroCmd.Flags().AddFlagSet(dcomExcelMacroExecFlags.Flags)
 
-  // Constraints
-  dcomExcelMacroCmd.MarkFlagsOneRequired("command", "exec", "macro", "macro-file")
-  dcomExcelMacroCmd.MarkFlagsMutuallyExclusive("command", "exec", "macro", "macro-file")
-  dcomExcelMacroCmd.MarkFlagsMutuallyExclusive("macro", "macro-file", "out")
+	// Constraints
+	dcomExcelMacroCmd.MarkFlagsOneRequired("command", "exec", "macro", "macro-file", "upload")
+	dcomExcelMacroCmd.MarkFlagsMutuallyExclusive("command", "exec", "macro", "macro-file")
+	dcomExcelMacroCmd.MarkFlagsMutuallyExclusive("macro", "macro-file", "out")
 }
 
 func dcomVisualStudioDteCmdInit() {
-  dcomVisualStudioDteVsFlags := newFlagSet("Visual Studio")
-  dcomVisualStudioDteVsFlags.Flags.BoolVar(&dcomVisualStudioDte.Is2019, "vs-2019", false, "Target Visual Studio 2019")
-  dcomVisualStudioDteVsFlags.Flags.StringVar(&dcomVisualStudioDte.CommandName, "vs-command", "", "Visual Studio DTE command to execute")
-  dcomVisualStudioDteVsFlags.Flags.StringVar(&dcomVisualStudioDte.CommandArgs, "vs-args", "", "Visual Studio DTE command arguments")
+	dcomVisualStudioDteVsFlags := newFlagSet("Visual Studio")
+	dcomVisualStudioDteVsFlags.Flags.BoolVar(&dcomVisualStudioDte.Is2019, "vs-2019", false, "Target Visual Studio 2019")
+	dcomVisualStudioDteVsFlags.Flags.StringVar(&dcomVisualStudioDte.CommandName, "vs-command", "", "Visual Studio DTE command to execute")
+	dcomVisualStudioDteVsFlags.Flags.StringVar(&dcomVisualStudioDte.CommandArgs, "vs-args", "", "Visual Studio DTE command arguments")
 
-  dcomVisualStudioDteExecFlags := newFlagSet("Execution")
-  registerExecutionFlags(dcomVisualStudioDteExecFlags.Flags)
-  registerExecutionOutputFlags(dcomVisualStudioDteExecFlags.Flags)
+	dcomVisualStudioDteExecFlags := newFlagSet("Execution")
+	registerExecutionFlags(dcomVisualStudioDteExecFlags.Flags)
+	registerExecutionOutputFlags(dcomVisualStudioDteExecFlags.Flags)
+	registerExecutionUploadFlags(dcomVisualStudioDteExecFlags.Flags)
 
-  cmdFlags[dcomVisualStudioDteCmd] = []*flagSet{
-    dcomVisualStudioDteVsFlags,
-    dcomVisualStudioDteExecFlags,
-    defaultAuthFlags,
-    defaultLogFlags,
-    defaultNetRpcFlags,
-  }
-  dcomVisualStudioDteCmd.Flags().AddFlagSet(dcomVisualStudioDteVsFlags.Flags)
-  dcomVisualStudioDteCmd.Flags().AddFlagSet(dcomVisualStudioDteExecFlags.Flags)
+	cmdFlags[dcomVisualStudioDteCmd] = []*flagSet{
+		dcomVisualStudioDteVsFlags,
+		dcomVisualStudioDteExecFlags,
+		defaultAuthFlags,
+		defaultLogFlags,
+		defaultNetRpcFlags,
+	}
+	dcomVisualStudioDteCmd.Flags().AddFlagSet(dcomVisualStudioDteVsFlags.Flags)
+	dcomVisualStudioDteCmd.Flags().AddFlagSet(dcomVisualStudioDteExecFlags.Flags)
 
-  // Constraints
-  dcomVisualStudioDteCmd.MarkFlagsOneRequired("command", "exec", "vs-command")
-  dcomVisualStudioDteCmd.MarkFlagsMutuallyExclusive("command", "exec", "vs-command")
-  dcomVisualStudioDteCmd.MarkFlagsMutuallyExclusive("vs-command", "out")
+	// Constraints
+	dcomVisualStudioDteCmd.MarkFlagsOneRequired("command", "exec", "vs-command", "upload")
+	dcomVisualStudioDteCmd.MarkFlagsMutuallyExclusive("command", "exec", "vs-command")
+	dcomVisualStudioDteCmd.MarkFlagsMutuallyExclusive("vs-command", "out")
 }
 
 func dcomExcelXllCmdInit() {
@@ -240,12 +246,13 @@ var (
     Long: `Description:
   The mmc method uses the exposed MMC20.Application object to call Document.ActiveView.ShellExec,
   and ultimately spawn a process on the remote host.`,
-    Args: args(argsRpcClient("cifs", ""),
-      argsOutput("smb"),
-      argsAcceptValues("window", &dcomMmc.WindowState, "Minimized", "Maximized", "Restored"),
-    ),
-    Run: func(cmd *cobra.Command, args []string) {
-      dcomMmc.Client = &rpcClient
+		Args: args(argsRpcClient("cifs", ""),
+			argsOutput("smb"),
+			argsUpload("smb"),
+			argsAcceptValues("window", &dcomMmc.WindowState, "Minimized", "Maximized", "Restored"),
+		),
+		Run: func(cmd *cobra.Command, args []string) {
+			dcomMmc.Client = &rpcClient
       ctx := log.With().Str("module", dcomexec.ModuleName).Str("method", dcomexec.MethodMmc).
         Logger().WithContext(gssapi.NewSecurityContext(context.Background()))
 
@@ -261,12 +268,13 @@ var (
     Long: `Description:
   The shellwindows method uses the exposed ShellWindows DCOM object on older Windows installations
   to call Item().Document.Application.ShellExecute, and spawn the provided process.`,
-    Args: args(argsRpcClient("host", ""),
-      argsOutput("smb"),
-      argsAcceptValues("app-window", &dcomShellWindows.WindowState, "0", "1", "2", "3", "4", "5", "7", "10"),
-    ),
-    Run: func(cmd *cobra.Command, args []string) {
-      dcomShellWindows.Client = &rpcClient
+		Args: args(argsRpcClient("host", ""),
+			argsOutput("smb"),
+			argsUpload("smb"),
+			argsAcceptValues("app-window", &dcomShellWindows.WindowState, "0", "1", "2", "3", "4", "5", "7", "10"),
+		),
+		Run: func(cmd *cobra.Command, args []string) {
+			dcomShellWindows.Client = &rpcClient
       ctx := log.With().Str("module", dcomexec.ModuleName).Str("method", dcomexec.MethodShellWindows).
         Logger().WithContext(gssapi.NewSecurityContext(context.Background()))
 
@@ -282,12 +290,13 @@ var (
     Long: `Description:
   The shellbrowserwindow method uses the exposed ShellBrowserWindow DCOM object on older Windows installations
   to call Document.Application.ShellExecute, and spawn the provided process.`,
-    Args: args(argsRpcClient("host", ""),
-      argsOutput("smb"),
-      argsAcceptValues("app-window", &dcomShellBrowserWindow.WindowState, "0", "1", "2", "3", "4", "5", "7", "10"),
-    ),
-    Run: func(cmd *cobra.Command, args []string) {
-      dcomShellBrowserWindow.Client = &rpcClient
+		Args: args(argsRpcClient("host", ""),
+			argsOutput("smb"),
+			argsUpload("smb"),
+			argsAcceptValues("app-window", &dcomShellBrowserWindow.WindowState, "0", "1", "2", "3", "4", "5", "7", "10"),
+		),
+		Run: func(cmd *cobra.Command, args []string) {
+			dcomShellBrowserWindow.Client = &rpcClient
       ctx := log.With().Str("module", dcomexec.ModuleName).Str("method", dcomexec.MethodShellBrowserWindow).
         Logger().WithContext(gssapi.NewSecurityContext(context.Background()))
 
@@ -303,9 +312,9 @@ var (
     Long: `Description:
   The htafile method uses the exposed "HTML Application" DCOM object to load a remote HTA application or execute inline.
   This is made possible by the Load method of the IPersistMoniker interface.`,
-    Args: args(argsRpcClient("host", ""), argsOutput("smb")),
-    RunE: func(cmd *cobra.Command, args []string) error {
-      dcomHtafile.Client = &rpcClient
+		Args: args(argsRpcClient("host", ""), argsOutput("smb"), argsUpload("smb")),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dcomHtafile.Client = &rpcClient
       dcomHtafile.Url = dcomexec.HtafileGetUrl(dcomHtafile.Url, dcomHtafile.Javascript, dcomHtafile.Vbscript, &exec)
 
       if url := strings.ToLower(dcomHtafile.Url); (strings.HasPrefix(url, "javascript:") || strings.HasPrefix(url, "vbscript:")) && len(url) > 508 {
@@ -327,9 +336,9 @@ var (
     Long: `Description:
   The macro method uses the exposed Excel.Application DCOM object to call ExecuteExcel4Macro, thus executing
   XLM macros at will. This method requires that the remote host has Microsoft Excel installed.`,
-    Args: args(argsRpcClient("host", ""), argsOutput("smb"),
-      func(*cobra.Command, []string) error {
-        if dcomExcelMacro.MacroFile != "" {
+		Args: args(argsRpcClient("host", ""), argsOutput("smb"), argsUpload("smb"),
+			func(*cobra.Command, []string) error {
+				if dcomExcelMacro.MacroFile != "" {
           f, err := os.Open(dcomExcelMacro.MacroFile)
           if err != nil {
             return fmt.Errorf("open macro file: %w", err)
@@ -380,9 +389,9 @@ var (
     Long: `Description:
   The dte method uses the exposed VisualStudio.DTE object to spawn a process via the ExecuteCommand method. This method
   requires that the remote host has Microsoft Visual Studio installed.`,
-    Args: args(argsRpcClient("host", ""), argsOutput("smb")),
-    Run: func(*cobra.Command, []string) {
-      dcomVisualStudioDte.Client = &rpcClient
+		Args: args(argsRpcClient("host", ""), argsOutput("smb"), argsUpload("smb")),
+		Run: func(*cobra.Command, []string) {
+			dcomVisualStudioDte.Client = &rpcClient
       ctx := log.With().Str("module", dcomexec.ModuleName).Str("method", dcomexec.MethodVisualStudioDTE).
         Logger().WithContext(gssapi.NewSecurityContext(context.Background()))
 

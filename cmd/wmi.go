@@ -50,12 +50,13 @@ func wmiCallCmdInit() {
 }
 
 func wmiProcCmdInit() {
-  wmiProcExecFlags := newFlagSet("Execution")
+	wmiProcExecFlags := newFlagSet("Execution")
 
-  registerExecutionFlags(wmiProcExecFlags.Flags)
-  registerExecutionOutputFlags(wmiProcExecFlags.Flags)
+	registerExecutionFlags(wmiProcExecFlags.Flags)
+	registerExecutionOutputFlags(wmiProcExecFlags.Flags)
+	registerExecutionUploadFlags(wmiProcExecFlags.Flags)
 
-  wmiProcExecFlags.Flags.StringVarP(&wmiProc.WorkingDirectory, "directory", "d", `C:\`, "Working directory")
+	wmiProcExecFlags.Flags.StringVarP(&wmiProc.WorkingDirectory, "directory", "d", `C:\`, "Working directory")
 
   cmdFlags[wmiProcCmd] = []*flagSet{
     wmiProcExecFlags,
@@ -117,13 +118,14 @@ var (
   The proc method creates an instance of the Win32_Process WMI class, then
   calls the Win32_Process.Create method with the provided command (-c),
   and optional working directory (-d).`,
-    Args: args(
-      argsRpcClient("cifs", ""),
-      argsOutput("smb"),
-    ),
+		Args: args(
+			argsRpcClient("cifs", ""),
+			argsOutput("smb"),
+			argsUpload("smb"),
+		),
 
-    Run: func(cmd *cobra.Command, args []string) {
-      wmiProc.Client = &rpcClient
+		Run: func(cmd *cobra.Command, args []string) {
+			wmiProc.Client = &rpcClient
       wmiProc.IO = exec
       wmiProc.Resource = "//./root/cimv2"
 

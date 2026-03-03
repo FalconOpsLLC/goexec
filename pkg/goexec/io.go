@@ -9,23 +9,36 @@ import (
 )
 
 type OutputProvider interface {
-  GetOutput(ctx context.Context, writer io.Writer) (err error)
-  Clean(ctx context.Context) (err error)
+	GetOutput(ctx context.Context, writer io.Writer) (err error)
+	Clean(ctx context.Context) (err error)
+}
+
+type InputProvider interface {
+	Upload(ctx context.Context, reader io.Reader) (err error)
+	Clean(ctx context.Context) (err error)
 }
 
 type ExecutionIO struct {
-  Cleaner
+	Cleaner
 
-  Input  *ExecutionInput
-  Output *ExecutionOutput
+	Input  *ExecutionInput
+	Output *ExecutionOutput
+	Upload *ExecutionUpload
 }
 
 type ExecutionOutput struct {
-  NoDelete   bool
-  RemotePath string
-  Timeout    time.Duration
-  Provider   OutputProvider
-  Writer     io.WriteCloser
+	NoDelete   bool
+	RemotePath string
+	Timeout    time.Duration
+	Provider   OutputProvider
+	Writer     io.WriteCloser
+}
+
+type ExecutionUpload struct {
+	NoDelete   bool
+	RemotePath string
+	Provider   InputProvider
+	Reader     io.ReadCloser
 }
 
 type ExecutionInput struct {
@@ -34,6 +47,20 @@ type ExecutionInput struct {
   ExecutablePath string
   Arguments      string
   Command        string
+}
+
+func (execIO *ExecutionIO) DoUpload(ctx context.Context) (err error) {
+	if execIO.Upload != nil && execIO.Upload.Provider != nil && execIO.Upload.Reader != nil {
+		return execIO.Upload.Provider.Upload(ctx, execIO.Upload.Reader)
+	}
+	return nil
+}
+
+func (execIO *ExecutionIO) CleanUpload(ctx context.Context) (err error) {
+	if execIO.Upload != nil && execIO.Upload.Provider != nil {
+		return execIO.Upload.Provider.Clean(ctx)
+	}
+	return nil
 }
 
 func (execIO *ExecutionIO) GetOutput(ctx context.Context) (err error) {

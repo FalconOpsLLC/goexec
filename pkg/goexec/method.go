@@ -101,31 +101,68 @@ func ExecuteCleanAuxiliaryMethod(ctx context.Context, module CleanAuxiliaryMetho
 }
 
 func ExecuteCleanMethod(ctx context.Context, module CleanExecutionMethod, execIO *ExecutionIO) (err error) {
-  log := zerolog.Ctx(ctx)
+	log := zerolog.Ctx(ctx)
 
-  if err = ExecuteMethod(ctx, module, execIO); err != nil {
-    return
-  }
+	// Connect
+	if err = module.Connect(ctx); err != nil {
+		log.Error().Err(err).Msg("Connection failed")
+		return fmt.Errorf("connect: %w", err)
+	}
+	log.Debug().Msg("Module connected")
 
-  if err = module.Clean(ctx); err != nil {
-    log.Error().Err(err).Msg("Module cleanup failed")
-    err = nil
-  }
+	// Init
+	if err = module.Init(ctx); err != nil {
+		log.Error().Err(err).Msg("Module initialization failed")
+		return fmt.Errorf("init module: %w", err)
+	}
+	log.Debug().Msg("Module initialized")
 
-  if execIO.Output != nil && execIO.Output.Provider != nil {
-    log.Info().Msg("Collecting output")
+	// Upload file (before execution)
+	if execIO.Upload != nil && execIO.Upload.Provider != nil {
+		log.Info().Str("dest", execIO.Upload.RemotePath).Msg("Uploading file")
+		if err = execIO.DoUpload(ctx); err != nil {
+			log.Error().Err(err).Msg("Upload failed")
+			return fmt.Errorf("upload: %w", err)
+		}
+		log.Info().Msg("Upload succeeded")
+	}
 
-    defer func() {
-      if cleanErr := execIO.Clean(ctx); cleanErr != nil {
-        log.Debug().Err(cleanErr).Msg("Output provider cleanup failed")
-      }
-    }()
+	// Execute (only if a command/executable was provided)
+	if execIO.Input != nil && (execIO.Input.Executable != "" || execIO.Input.Command != "" || execIO.Input.ExecutablePath != "") {
+		if err = module.Execute(ctx, execIO); err != nil {
+			log.Error().Err(err).Msg("Execution failed")
+			return fmt.Errorf("execute: %w", err)
+		}
+	}
 
-    if err := execIO.GetOutput(ctx); err != nil {
-      log.Error().Err(err).Msg("Output collection failed")
-      return fmt.Errorf("get output: %w", err)
-    }
-    log.Debug().Msg("Output collection succeeded")
-  }
-  return
+	// Module cleanup
+	if err = module.Clean(ctx); err != nil {
+		log.Error().Err(err).Msg("Module cleanup failed")
+		err = nil
+	}
+
+	// Upload cleanup (delete uploaded file if configured)
+	if execIO.Upload != nil && execIO.Upload.Provider != nil {
+		if cleanErr := execIO.CleanUpload(ctx); cleanErr != nil {
+			log.Debug().Err(cleanErr).Msg("Upload cleanup failed")
+		}
+	}
+
+	// Output collection
+	if execIO.Output != nil && execIO.Output.Provider != nil {
+		log.Info().Msg("Collecting output")
+
+		defer func() {
+			if cleanErr := execIO.Clean(ctx); cleanErr != nil {
+				log.Debug().Err(cleanErr).Msg("Output provider cleanup failed")
+			}
+		}()
+
+		if err := execIO.GetOutput(ctx); err != nil {
+			log.Error().Err(err).Msg("Output collection failed")
+			return fmt.Errorf("get output: %w", err)
+		}
+		log.Debug().Msg("Output collection succeeded")
+	}
+	return
 }

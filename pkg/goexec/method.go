@@ -141,13 +141,6 @@ func ExecuteCleanMethod(ctx context.Context, module CleanExecutionMethod, execIO
 		err = nil
 	}
 
-	// Upload cleanup (delete uploaded file if configured)
-	if execIO.Upload != nil && execIO.Upload.Provider != nil {
-		if cleanErr := execIO.CleanUpload(ctx); cleanErr != nil {
-			log.Debug().Err(cleanErr).Msg("Upload cleanup failed")
-		}
-	}
-
 	// Output collection
 	if execIO.Output != nil && execIO.Output.Provider != nil {
 		log.Info().Msg("Collecting output")

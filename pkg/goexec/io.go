@@ -35,7 +35,6 @@ type ExecutionOutput struct {
 }
 
 type ExecutionUpload struct {
-	NoDelete   bool
 	RemotePath string
 	Provider   InputProvider
 	Reader     io.ReadCloser
@@ -52,13 +51,6 @@ type ExecutionInput struct {
 func (execIO *ExecutionIO) DoUpload(ctx context.Context) (err error) {
 	if execIO.Upload != nil && execIO.Upload.Provider != nil && execIO.Upload.Reader != nil {
 		return execIO.Upload.Provider.Upload(ctx, execIO.Upload.Reader)
-	}
-	return nil
-}
-
-func (execIO *ExecutionIO) CleanUpload(ctx context.Context) (err error) {
-	if execIO.Upload != nil && execIO.Upload.Provider != nil {
-		return execIO.Upload.Provider.Clean(ctx)
 	}
 	return nil
 }

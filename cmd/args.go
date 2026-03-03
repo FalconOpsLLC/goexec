@@ -52,7 +52,6 @@ func registerExecutionFlags(fs *pflag.FlagSet) {
 func registerExecutionUploadFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&uploadSource, "upload", "", "Upload local `file` to remote filesystem")
 	fs.StringVar(&uploadDest, "upload-dest", "", "Remote destination `path` for uploaded file")
-	fs.BoolVar(&exec.Upload.NoDelete, "no-delete-upload", false, "Preserve uploaded file on remote filesystem")
 }
 
 func registerExecutionOutputFlags(fs *pflag.FlagSet) {

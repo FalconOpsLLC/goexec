@@ -187,11 +187,10 @@ Authors: FalconOps LLC (@FalconOpsLLC),
 		if uploadSource != "" {
 			exec.Upload.RemotePath = uploadDest
 			exec.Upload.Provider = &smb.FileStager{
-				Client:             &smbClient,
-				Share:              `C$`,
-				SharePath:          `C:\`,
-				File:               uploadDest,
-				DeleteUploadedFile: !exec.Upload.NoDelete,
+				Client:    &smbClient,
+				Share:     `C$`,
+				SharePath: `C:\`,
+				File:      uploadDest,
 			}
 		}
 		return

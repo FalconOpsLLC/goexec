@@ -16,12 +16,11 @@ type FileStager struct {
 
 	Client *Client
 
-	Share              string
-	SharePath          string
-	File               string
-	relativePath       string
-	ForceReconnect     bool
-	DeleteUploadedFile bool
+	Share          string
+	SharePath      string
+	File           string
+	relativePath   string
+	ForceReconnect bool
 }
 
 func (o *FileStager) Upload(ctx context.Context, reader io.Reader) (err error) {
@@ -59,12 +58,6 @@ func (o *FileStager) Upload(ctx context.Context, reader io.Reader) (err error) {
 	}
 
 	o.AddCleaners(func(_ context.Context) error { return writer.Close() })
-
-	if o.DeleteUploadedFile {
-		o.AddCleaners(func(_ context.Context) error {
-			return o.Client.mount.Remove(o.relativePath)
-		})
-	}
 
 	return
 }

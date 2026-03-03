@@ -51,7 +51,8 @@ func registerExecutionFlags(fs *pflag.FlagSet) {
 
 func registerExecutionUploadFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&uploadSource, "upload", "", "Upload local `file` to remote filesystem")
-	fs.StringVar(&uploadDest, "upload-dest", "", "Remote destination `path` for uploaded file")
+	fs.StringVar(&uploadDest, "upload-dest", "", "Remote destination `path` for uploaded file (default: random temp path)")
+	fs.BoolVar(&exec.Upload.NoConfirm, "no-upload-confirm", false, "Skip upload confirmation check")
 }
 
 func registerExecutionOutputFlags(fs *pflag.FlagSet) {
@@ -185,9 +186,6 @@ func argsUpload(methods ...string) func(cmd *cobra.Command, args []string) error
 	return args(append(as, func(*cobra.Command, []string) (err error) {
 
 		if uploadSource != "" {
-			if uploadDest == "" {
-				return fmt.Errorf("--upload-dest is required when --upload is set")
-			}
 			exec.Upload.Reader, err = os.Open(uploadSource)
 			if err != nil {
 				return fmt.Errorf("open upload file: %w", err)

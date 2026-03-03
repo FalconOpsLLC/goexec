@@ -35,9 +35,16 @@ type ExecutionOutput struct {
 }
 
 type ExecutionUpload struct {
+	NoConfirm  bool
 	RemotePath string
 	Provider   InputProvider
 	Reader     io.ReadCloser
+}
+
+// UploadConfirmer is an optional interface that InputProvider implementations
+// can satisfy to confirm a file was successfully uploaded.
+type UploadConfirmer interface {
+	ConfirmUpload(ctx context.Context) error
 }
 
 type ExecutionInput struct {

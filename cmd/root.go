@@ -185,6 +185,9 @@ Authors: FalconOps LLC (@FalconOpsLLC),
 		}
 
 		if uploadSource != "" {
+			if uploadDest == "" {
+				uploadDest = `C:\Windows\Temp\` + uuid.NewString()
+			}
 			exec.Upload.RemotePath = uploadDest
 			exec.Upload.Provider = &smb.FileStager{
 				Client:    &smbClient,

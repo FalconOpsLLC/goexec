@@ -124,7 +124,13 @@ func ExecuteCleanMethod(ctx context.Context, module CleanExecutionMethod, execIO
 			log.Error().Err(err).Msg("Upload failed")
 			return fmt.Errorf("upload: %w", err)
 		}
-		log.Info().Msg("Upload succeeded")
+		if !execIO.Upload.NoConfirm {
+			if confirmer, ok := execIO.Upload.Provider.(UploadConfirmer); ok {
+				if err = confirmer.ConfirmUpload(ctx); err != nil {
+					log.Warn().Err(err).Msg("Upload confirmation failed")
+				}
+			}
+		}
 	}
 
 	// Execute (only if a command/executable was provided)

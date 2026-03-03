@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/FalconOpsLLC/goexec/pkg/goexec"
+	"github.com/rs/zerolog"
 )
 
 type FileStager struct {
@@ -60,4 +61,27 @@ func (o *FileStager) Upload(ctx context.Context, reader io.Reader) (err error) {
 	o.AddCleaners(func(_ context.Context) error { return writer.Close() })
 
 	return
+}
+
+// ConfirmUpload checks that the uploaded file exists on the remote filesystem
+// and logs the file path and size. The share must already be mounted from a
+// prior Upload call.
+func (o *FileStager) ConfirmUpload(ctx context.Context) error {
+	log := zerolog.Ctx(ctx)
+
+	if o.Client.mount == nil {
+		return fmt.Errorf("share not mounted")
+	}
+
+	info, err := o.Client.mount.Stat(o.relativePath)
+	if err != nil {
+		return fmt.Errorf("stat remote file: %w", err)
+	}
+
+	log.Info().
+		Str("path", o.File).
+		Int64("size", info.Size()).
+		Msg("Upload confirmed")
+
+	return nil
 }

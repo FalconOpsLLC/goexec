@@ -40,14 +40,6 @@ func registerNetworkFlags(fs *pflag.FlagSet) {
   //cmd.MarkFlagsMutuallyExclusive("no-epm", "epm-filter")
 }
 
-// FUTURE: automatically stage & execute file
-/*
-func registerStageFlags(fs *pflag.FlagSet) {
-  fs.StringVarP(&stageFilePath, "stage", "E", "", "File to stage and execute")
-  //fs.StringVarP(&stageArgs ...)
-}
-*/
-
 func registerExecutionFlags(fs *pflag.FlagSet) {
   fs.StringVarP(&exec.Input.Executable, "exec", "e", "", "Remote Windows `executable` to invoke")
   fs.StringVarP(&exec.Input.Arguments, "args", "a", "", "Process command line arguments")
@@ -55,6 +47,12 @@ func registerExecutionFlags(fs *pflag.FlagSet) {
 
   //cmd.MarkFlagsOneRequired("executable", "command")
   //cmd.MarkFlagsMutuallyExclusive("executable", "command")
+}
+
+func registerExecutionUploadFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&uploadSource, "upload", "", "Upload local `file` to remote filesystem")
+	fs.StringVar(&uploadDest, "upload-dest", "", "Remote destination `path` for uploaded file")
+	fs.BoolVar(&exec.Upload.NoDelete, "no-delete-upload", false, "Preserve uploaded file on remote filesystem")
 }
 
 func registerExecutionOutputFlags(fs *pflag.FlagSet) {
@@ -153,24 +151,49 @@ func argsRpcClient(proto string, endpoint string) func(cmd *cobra.Command, args 
 
 func argsOutput(methods ...string) func(cmd *cobra.Command, args []string) error {
 
-  var as []func(*cobra.Command, []string) error
+	var as []func(*cobra.Command, []string) error
 
-  for _, method := range methods {
-    if method == "smb" {
-      as = append(as, argsSmbClient())
-    }
-  }
+	for _, method := range methods {
+		if method == "smb" {
+			as = append(as, argsSmbClient())
+		}
+	}
 
-  return args(append(as, func(*cobra.Command, []string) (err error) {
+	return args(append(as, func(*cobra.Command, []string) (err error) {
 
-    if outputPath != "" {
-      if outputPath == "-" {
-        exec.Output.Writer = os.Stdout
+		if outputPath != "" {
+			if outputPath == "-" {
+				exec.Output.Writer = os.Stdout
 
-      } else if exec.Output.Writer, err = os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644); err != nil {
-        log.Fatal().Err(err).Msg("Failed to open output file")
-      }
-    }
-    return
-  })...)
+			} else if exec.Output.Writer, err = os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644); err != nil {
+				log.Fatal().Err(err).Msg("Failed to open output file")
+			}
+		}
+		return
+	})...)
+}
+
+func argsUpload(methods ...string) func(cmd *cobra.Command, args []string) error {
+
+	var as []func(*cobra.Command, []string) error
+
+	for _, method := range methods {
+		if method == "smb" {
+			as = append(as, argsSmbClient())
+		}
+	}
+
+	return args(append(as, func(*cobra.Command, []string) (err error) {
+
+		if uploadSource != "" {
+			if uploadDest == "" {
+				return fmt.Errorf("--upload-dest is required when --upload is set")
+			}
+			exec.Upload.Reader, err = os.Open(uploadSource)
+			if err != nil {
+				return fmt.Errorf("open upload file: %w", err)
+			}
+		}
+		return
+	})...)
 }

@@ -60,11 +60,12 @@ var (
   returnCode int
   toClose    []io.Closer
 
-  // === IO ===
-  //stageFilePath string // FUTURE
-  outputMethod string
-  outputPath   string
-  // ==========
+	// === IO ===
+	outputMethod string
+	outputPath   string
+	uploadSource string
+	uploadDest   string
+	// ==========
 
   // === Logging ===
   logJson   bool           // Log output in JSON lines
@@ -89,10 +90,11 @@ var (
   memProfileFile io.WriteCloser
   // ==========================
 
-  exec = goexec.ExecutionIO{
-    Input:  new(goexec.ExecutionInput),
-    Output: new(goexec.ExecutionOutput),
-  }
+	exec = goexec.ExecutionIO{
+		Input:  new(goexec.ExecutionInput),
+		Output: new(goexec.ExecutionOutput),
+		Upload: new(goexec.ExecutionUpload),
+	}
 
   adAuthOpts *adauth.Options
   credential *adauth.Credential
@@ -167,50 +169,67 @@ Authors: FalconOps LLC (@FalconOpsLLC),
         smbClient.Proxy = proxy
       }
 
-      if outputPath != "" {
-        if outputMethod == "smb" {
-          if exec.Output.RemotePath == "" {
-            exec.Output.RemotePath = `C:\Windows\Temp\` + uuid.NewString()
-          }
-          exec.Output.Provider = &smb.OutputFileFetcher{
-            Client:           &smbClient,
-            Share:            `ADMIN$`, // TODO: dynamic
-            SharePath:        `C:\Windows`,
-            File:             exec.Output.RemotePath,
-            DeleteOutputFile: !exec.Output.NoDelete,
-          }
-        }
-      }
-      return
-    },
+		if outputPath != "" {
+			if outputMethod == "smb" {
+				if exec.Output.RemotePath == "" {
+					exec.Output.RemotePath = `C:\Windows\Temp\` + uuid.NewString()
+				}
+				exec.Output.Provider = &smb.OutputFileFetcher{
+					Client:           &smbClient,
+					Share:            `ADMIN$`, // TODO: dynamic
+					SharePath:        `C:\Windows`,
+					File:             exec.Output.RemotePath,
+					DeleteOutputFile: !exec.Output.NoDelete,
+				}
+			}
+		}
 
-    PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		if uploadSource != "" {
+			exec.Upload.RemotePath = uploadDest
+			exec.Upload.Provider = &smb.FileStager{
+				Client:             &smbClient,
+				Share:              `C$`,
+				SharePath:          `C:\`,
+				File:               uploadDest,
+				DeleteUploadedFile: !exec.Upload.NoDelete,
+			}
+		}
+		return
+	},
 
-      if memProfileFile != nil {
-        if err := pprof.WriteHeapProfile(memProfileFile); err != nil {
-          log.Error().Err(err).Msg("Failed to write memory profile")
-          return
-        }
-      }
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 
-      if cpuProfileFile != nil {
-        pprof.StopCPUProfile()
-      }
+		if memProfileFile != nil {
+			if err := pprof.WriteHeapProfile(memProfileFile); err != nil {
+				log.Error().Err(err).Msg("Failed to write memory profile")
+				return
+			}
+		}
 
-      if exec.Input != nil && exec.Input.StageFile != nil {
-        if err := exec.Input.StageFile.Close(); err != nil {
-          log.Warn().Err(err).Msg("Failed to close stage file")
-        }
-      }
+		if cpuProfileFile != nil {
+			pprof.StopCPUProfile()
+		}
 
-      for _, c := range toClose {
-        if c != nil {
-          if err := c.Close(); err != nil {
-            log.Warn().Err(err).Msg("Failed to close stream")
-          }
-        }
-      }
-    },
+		if exec.Input != nil && exec.Input.StageFile != nil {
+			if err := exec.Input.StageFile.Close(); err != nil {
+				log.Warn().Err(err).Msg("Failed to close stage file")
+			}
+		}
+
+		if exec.Upload != nil && exec.Upload.Reader != nil {
+			if err := exec.Upload.Reader.Close(); err != nil {
+				log.Warn().Err(err).Msg("Failed to close upload file")
+			}
+		}
+
+		for _, c := range toClose {
+			if c != nil {
+				if err := c.Close(); err != nil {
+					log.Warn().Err(err).Msg("Failed to close stream")
+				}
+			}
+		}
+	},
   }
 )
 

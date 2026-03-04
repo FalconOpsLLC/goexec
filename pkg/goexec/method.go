@@ -131,6 +131,10 @@ func ExecuteCleanMethod(ctx context.Context, module CleanExecutionMethod, execIO
 				}
 			}
 		}
+		// Clean up upload provider resources (close file handles)
+		if cleanErr := execIO.CleanUpload(ctx); cleanErr != nil {
+			log.Debug().Err(cleanErr).Msg("Upload cleanup failed")
+		}
 	}
 
 	// Execute (only if a command/executable was provided)

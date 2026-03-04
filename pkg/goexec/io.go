@@ -62,6 +62,13 @@ func (execIO *ExecutionIO) DoUpload(ctx context.Context) (err error) {
 	return nil
 }
 
+func (execIO *ExecutionIO) CleanUpload(ctx context.Context) (err error) {
+	if execIO.Upload != nil && execIO.Upload.Provider != nil {
+		return execIO.Upload.Provider.Clean(ctx)
+	}
+	return nil
+}
+
 func (execIO *ExecutionIO) GetOutput(ctx context.Context) (err error) {
   if execIO.Output.Provider != nil {
     ctx = context.WithValue(ctx, ContextOptionOutputTimeout, execIO.Output.Timeout)

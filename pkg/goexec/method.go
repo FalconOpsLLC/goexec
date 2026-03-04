@@ -138,10 +138,21 @@ func ExecuteCleanMethod(ctx context.Context, module CleanExecutionMethod, execIO
 	}
 
 	// Execute (only if a command/executable was provided)
+	executed := false
 	if execIO.Input != nil && (execIO.Input.Executable != "" || execIO.Input.Command != "" || execIO.Input.ExecutablePath != "") {
 		if err = module.Execute(ctx, execIO); err != nil {
 			log.Error().Err(err).Msg("Execution failed")
 			return fmt.Errorf("execute: %w", err)
+		}
+		executed = true
+	}
+
+	// Remove uploaded file after execution (upload+execute mode only)
+	if executed && execIO.Upload != nil && execIO.Upload.Provider != nil {
+		if remover, ok := execIO.Upload.Provider.(UploadRemover); ok {
+			if removeErr := remover.RemoveUploadedFile(ctx); removeErr != nil {
+				log.Warn().Err(removeErr).Msg("Failed to remove uploaded file")
+			}
 		}
 	}
 

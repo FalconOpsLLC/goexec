@@ -63,6 +63,23 @@ func (o *FileStager) Upload(ctx context.Context, reader io.Reader) (err error) {
 	return
 }
 
+// RemoveUploadedFile deletes the uploaded file from the remote filesystem.
+// The share must already be mounted from a prior Upload call.
+func (o *FileStager) RemoveUploadedFile(ctx context.Context) error {
+	log := zerolog.Ctx(ctx)
+
+	if o.Client.mount == nil {
+		return fmt.Errorf("share not mounted")
+	}
+
+	if err := o.Client.mount.Remove(o.relativePath); err != nil {
+		return fmt.Errorf("remove remote file: %w", err)
+	}
+
+	log.Info().Str("path", o.File).Msg("Removed uploaded file")
+	return nil
+}
+
 // ConfirmUpload checks that the uploaded file exists on the remote filesystem
 // and logs the file path and size. The share must already be mounted from a
 // prior Upload call.

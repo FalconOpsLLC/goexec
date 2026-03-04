@@ -47,6 +47,12 @@ type UploadConfirmer interface {
 	ConfirmUpload(ctx context.Context) error
 }
 
+// UploadRemover is an optional interface that InputProvider implementations
+// can satisfy to remove a previously uploaded file from the remote filesystem.
+type UploadRemover interface {
+	RemoveUploadedFile(ctx context.Context) error
+}
+
 type ExecutionInput struct {
   StageFile      io.ReadCloser
   Executable     string
